@@ -60,11 +60,11 @@ let rec handle_request client =
 	      | None ->
 		  if (send_response client (RuntimeError(id, "MapRequest: None")))
 		  then ()
-		  else handle_response client
+		  else handle_request client
 	      | Some n -> 
 		  if (send_response client (MapResults(id, n)))
 		  then ()
-		  else handle_response client)
+		  else handle_request client)
 	    | false -> 
 		if (send_response client (InvalidWorker(id))) 
 		then ()
