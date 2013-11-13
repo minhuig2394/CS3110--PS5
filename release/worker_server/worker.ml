@@ -50,7 +50,7 @@ let rec handle_request client =
 		else handle_request client
 	    |_ -> failwith "InitReducer: Invalid Compiliation")
         | MapRequest (id, k, v) -> 
-          print_end_line "Request Mapper";
+          print_endline "Request Mapper";
 	    Mutex.lock safe;
 	    let found = Hashtbl.mem maptable (Some id) in 
 	    Mutex.unlock safe;
@@ -70,7 +70,7 @@ let rec handle_request client =
 		then ()
 		else handle_request client)
         | ReduceRequest (id, k, v) -> 
-	    print_end_line "Request Reducer";
+	    print_endline "Request Reducer";
             Mutex.lock safe;
 	    let found = Hashtbl.mem redtable (Some id) in
 	    Mutex.unlock safe;
