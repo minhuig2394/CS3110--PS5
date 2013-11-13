@@ -1,3 +1,5 @@
-
+version 2: released 11/11
+ - added function 'Util.string_of_bodies'
+ - removed file 'apps/nbody/nbody.mli'
 version 1: released 11/1
  - initial revision

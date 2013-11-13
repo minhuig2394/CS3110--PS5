@@ -6,13 +6,6 @@
 # ws -- rebuild worker_server
 # con -- rebuild controller
 # clean -- remove all objects and executables
-TOP_SOURCES = unix.cma str.cma -I +threads threads.cma -I shared plane.cmo \
-util.cma thread_pool.cmo connection.cmo protocol.cmo -I controller \
-worker_manager.cmo map_reduce.cmo
-
-.PHONY: top
-top: con
-	rlwrap ocaml $(TOP_SOURCES)
 
 UTIL_SOURCES = shared/plane.mli shared/plane.ml shared/util.mli shared/util.ml \
 shared/simulations.mli shared/simulations.ml

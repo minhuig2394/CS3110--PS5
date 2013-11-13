@@ -1,9 +1,9 @@
 :: Build script for Map Reduce
 @echo off
 
-SET UTIL_SOURCES=shared\plane.mli shared\plane.ml shared\util.mli shared\util.ml shared\simulations.mli shared\simulations.ml
+SET UTIL_SOURCES=shared\plane.mli shared\plane.ml shared\util.mli shared\util.ml 
 
-SET SHARED_SOURCES=shared\thread_pool.mli shared\thread_pool.ml shared\connection.mli shared\connection.ml shared\protocol.mli shared\protocol.ml
+SET SHARED_SOURCES=shared\thread_pool.mli shared\thread_pool.ml shared\connection.mli shared\connection.ml shared\protocol.mli shared\protocol.ml shared\simulations.mli shared\simulations.ml
 
 SET WS_SOURCES=worker_server\program.mli worker_server\program.ml worker_server\worker.mli worker_server\worker.ml worker_server\worker_server.mli worker_server\worker_server.ml
 
@@ -17,7 +17,7 @@ ocamlc -o shared\util.cma -a -I shared %UTIL_SOURCES%
 
 :: Builds applications
 echo Building applications...
-ocamlc -c -thread -I shared -I controller %SHARED_SOURCES% %UTIL_SOURCES% %APP_SOURCES%
+ocamlc -c -thread -I shared -I controller %UTIL_SOURCES% %SHARED_SOURCES% %CONTROLLER_SOURCES% %APP_SOURCES%
 
 :: Builds worker server
 echo Building worker server...

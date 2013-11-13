@@ -36,22 +36,25 @@ let mem_spec table k b =
 
 (** Map.empty *****************************************************************)
 
-let empty_spec =
-  failwith "A true sign of intelligence is not knowledge but imagination."
+let empty_spec table=
+  bindings table = []
+  
 
 (* Dependent type for empty: 
  *
- * val empty : TODO
+ * val empty : (table: ('a,'b) t where empty_spec table)
  *)
 
 (** Map.find ******************************************************************)
 
-let find_spec =
-  failwith "A person who never made a mistake never tried anything new."
+let find_spec k table v = 
+  
 
 (* Dependent type for find: 
  *
- * val find : TODO
+ * val find : (k: 'a)
+ *          ->(table ('a,'b) t)
+ *          ->(v: 'b where find_spec k table v)
  *)
 
 
@@ -84,24 +87,31 @@ let add_spec table k v result =
  *)
 
 (** Map.remove ****************************************************************)
-
-let remove_spec = 
-  failwith "I have no special talent, I am only passionately curious."
+(* specification for remove *)
+let remove_spec k table result= 
+  eqset (bindings_without k table) (bindings result)
+  && (not (mem k result))
 
 (* Dependent type for remove: 
  *
- * val remove : TODO
+ * val remove : (k:'a)
+ *           ->  (table:('a,'b) t)
+ *           -> (result:('a,'b) t where remove_spec k table result)
  *)
 
 (** Map.equal *****************************************************************)
 
-
-let equal_spec =
-  failwith ("Insanity: doing the same thing over and over"^
-            " again and expecting different results.")
+(* specification for equal *)
+let equal_spec cmp table1 table2 b=
+  eqset (bindings table1) (bindings table2) 
+  && 
+  
 
 (* Dependent type for equal: 
- * val equal : TODO
+ * val equal : (cmp: 'a -> 'a -> bool)
+ *          -> (table1:('a,'b) t)
+ *          -> (table2:('a,'b) t)
+ *          -> (b: bool where equal_spec cmp table1 table2 b)
  *)
 
 end
