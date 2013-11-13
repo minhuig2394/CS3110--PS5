@@ -96,13 +96,13 @@ let reduce kvs_pairs reduce_filename : (string * string list) list =
               else (); 
               (Mutex.unlock tasklock)
             |None -> ()
-            ) mthread_pool) in  
+            ) rthread_pool) in  
     while Hashtbl.length rtasktbl > 0 do 
       Hashtbl.iter (fun k v -> work k v) rtasktbl; 
       Thread.delay 0.1;
     done;
   clean_up_workers workers; 
-  Thread_pool.destroy mthread_pool; 
+  Thread_pool.destroy rthread_pool; 
   Hashtbl.fold (fun k v acc -> (k,v)::acc) rhashtbl []
 
 let map_reduce app_name mapper_name reducer_name kv_pairs =
