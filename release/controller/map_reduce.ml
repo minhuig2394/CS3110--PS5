@@ -21,37 +21,36 @@ let rthread_pool = Thread_pool.create 100
 * Ultimately, information entered in the hashtable is converted into a list.  
 *)
 let map kv_pairs map_filename : (string * string) list = 
-  let add = List.fold_left
-    (fun acc elem -> 
-      Hashtbl.add mtasktbl (acc,elem) false;(acc+1)) 0 kv_pairs in ();
+  List.iter
+    (fun elem -> 
+      Hashtbl.add mtasktbl elem false) kv_pairs;
   let workers = (initialize_mappers map_filename) in 
-  let rec mapping b=
-    (if b = false then 
-      (Mutex.lock tasklock;
-      let finished = 
-      Hashtbl.fold (fun k v acc -> 
-        let worker = (pop_worker workers) in 
-        match k with 
-        |i,(key,value) ->
-          if v = false then 
+  let work k v= 
+    let worker = (pop_worker workers) in 
+      (match k with 
+        |(key,value) ->
           (Thread_pool.add_work (fun x ->
             match (map worker key value) with 
             |Some(l) -> 
               (Mutex.lock tasklock); 
-              if (Hashtbl.find mtasktbl k )= false then 
-                ((Hashtbl.replace mtasktbl k true);
+              if Hashtbl.mem mtasktbl k then 
+                ((Hashtbl.remove mtasktbl k);
                   (Mutex.lock hashlock); 
-                  (List.iter (fun elem -> Hashtbl.add mhashtbl (fst elem) (snd elem)) l); 
-                  (Mutex.unlock hashlock))
+                  (List.iter (
+                    fun elem -> Hashtbl.add mhashtbl (fst elem) (snd elem)) l); 
+                  (Mutex.unlock hashlock);
+                  push_worker workers worker;)
               else (); 
               (Mutex.unlock tasklock)
             |None -> ()
-            ) mthread_pool; false) 
-          else acc) mtasktbl true in (); 
-           Mutex.unlock tasklock;
-       mapping finished)
-    else Thread_pool.destroy mthread_pool; clean_up_workers workers)
-      in mapping false; Hashtbl.fold (fun k v acc -> (k,v)::acc) mhashtbl []
+            ) mthread_pool)) in  
+    (while Hashtbl.length mtasktbl > 0 do 
+      Hashtbl.iter (fun k v -> work k v) mtasktbl; 
+      Thread.delay 0.1
+    done);
+  clean_up_workers workers; 
+  Thread_pool.destroy mthread_pool; 
+  Hashtbl.fold (fun k v acc -> (k,v)::acc) mhashtbl []
 
 
 (* combine kv_pairs combines values with identical keys a tuple 
@@ -76,36 +75,35 @@ let combine kv_pairs : (string * string list) list =
 *)
 
 let reduce kvs_pairs reduce_filename : (string * string list) list =
-  let add = List.fold_left
-    (fun acc elem -> 
-      Hashtbl.add rtasktbl (acc,elem) false;(acc+1)) 0 kvs_pairs in ();
+  List.iter
+    (fun elem -> 
+      Hashtbl.add rtasktbl elem false) kvs_pairs;
   let workers = (initialize_reducers reduce_filename) in 
-  let rec reducing b=
-    if b = false then 
-      (Mutex.lock tasklock;
-      let finished = 
-        Hashtbl.fold (fun k v acc -> 
-          let worker = (pop_worker workers) in 
-         match k with 
-         |i,(key,value) ->
-            if v = false then 
-            (Thread_pool.add_work (fun x ->
-              match (reduce worker key value) with 
-              |Some(l) -> 
-               Mutex.lock tasklock; 
-               if Hashtbl.find rtasktbl k = false then 
-                 (Hashtbl.replace rtasktbl k true;
-                 Mutex.lock hashlock; 
-                  Hashtbl.add rhashtbl key l;
-                 Mutex.unlock hashlock)
-               else (); Mutex.unlock tasklock
-             |None -> ()
-             ) rthread_pool; false)
-             else acc) rtasktbl true in (); Mutex.unlock tasklock;
-        reducing finished)
-    else Thread_pool.destroy rthread_pool; clean_up_workers workers
-    in reducing false;
-      Hashtbl.fold (fun k v acc -> (k,v)::acc) rhashtbl []
+  let work k v= 
+    let worker = (pop_worker workers) in 
+      match k with 
+        |(key,value) ->
+          (Thread_pool.add_work (fun x ->
+            match (reduce worker key value) with 
+            |Some(l) -> 
+              (Mutex.lock tasklock); 
+              if Hashtbl.mem rtasktbl k then 
+                ((Hashtbl.remove rtasktbl k);
+                  (Mutex.lock hashlock); 
+                    Hashtbl.add rhashtbl key l; 
+                  (Mutex.unlock hashlock);
+                  push_worker workers worker;)
+              else (); 
+              (Mutex.unlock tasklock)
+            |None -> ()
+            ) mthread_pool) in  
+    while Hashtbl.length rtasktbl > 0 do 
+      Hashtbl.iter (fun k v -> work k v) rtasktbl; 
+      Thread.delay 0.1;
+    done;
+  clean_up_workers workers; 
+  Thread_pool.destroy mthread_pool; 
+  Hashtbl.fold (fun k v acc -> (k,v)::acc) rhashtbl []
 
 let map_reduce app_name mapper_name reducer_name kv_pairs =
   let map_filename    = Printf.sprintf "apps/%s/%s.ml" app_name mapper_name  in
