@@ -22,7 +22,7 @@ let rec handle_request client =
 	    (let construct = Program.build source in
 	    match construct with 
 	    |(None, error) ->
-		if (send_response client (Mapper(None, error))
+		if (send_response client (Mapper(None, error)))
 		then ()
 		else handle_request client
 	    |(Some id, "") ->
@@ -32,13 +32,13 @@ let rec handle_request client =
 		if send_response client (Mapper(Some id, ""))
 		then ()
 		else handle_request client
-	    |_ -> failwith "InitMapper: Invalid Compiliation"
+	    |_ -> failwith "InitMapper: Invalid Compiliation")
         | InitReducer source -> 
             print_endline "Intialize Reducer";
 	    (let construct = Program.build source in
 	    match construct with 
 	    |(None, error) ->
-		if (send_response client (Reducer(None, error))
+		if (send_response client (Reducer(None, error)))
 		then ()
 		else handle_request client
 	    |(Some id, "") ->
@@ -48,7 +48,7 @@ let rec handle_request client =
 		if send_response client (Reducer(Some id, ""))
 		then ()
 		else handle_request client
-	    |_ -> failwith "InitReducer: Invalid Compiliation"
+	    |_ -> failwith "InitReducer: Invalid Compiliation")
         | MapRequest (id, k, v) -> 
           print_end_line "Request Mapper";
 	    Mutex.lock safe;
