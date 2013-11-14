@@ -57,8 +57,8 @@ let map kv_pairs map_filename : (string * string) list =
       Thread.delay 0.1;
     done);
     print_endline "cleanup";
-  clean_up_workers workers; 
-  Thread_pool.destroy mthread_pool; 
+    Thread_pool.destroy mthread_pool; 
+    clean_up_workers workers; 
     print_endline "kvs";
   Hashtbl.fold (fun k v acc -> (k,v)::acc) mhashtbl []
 
@@ -112,8 +112,8 @@ let reduce kvs_pairs reduce_filename : (string * string list) list =
             ) rthread_pool)) rtasktbl; 
       Thread.delay 0.1;
     done;
-  clean_up_workers workers; 
   Thread_pool.destroy rthread_pool; 
+  clean_up_workers workers; 
   print_endline "end reducing";
   Hashtbl.fold (fun k v acc -> (k,v)::acc) rhashtbl []
 
