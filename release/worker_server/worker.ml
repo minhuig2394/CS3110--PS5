@@ -30,8 +30,8 @@ let rec handle_request client =
 		Hashtbl.add maptable (Some id) true;
 		Mutex.unlock safe;
 		if (send_response client (Mapper(Some id, "")))
-		then ()
-		else handle_request client
+		then handle_request client
+		else ()
 	    |_ -> failwith "InitMapper: Invalid Compiliation")
         | InitReducer source -> 
             print_endline "Intialize Reducer";
@@ -39,15 +39,15 @@ let rec handle_request client =
 	    match construct with 
 	    |(None, error) ->
 		if (send_response client (Reducer(None, error)))
-		then ()
-		else handle_request client
+		then handle_request client
+		else ()
 	    |(Some id, "") ->
 		Mutex.lock safe;
 		Hashtbl.add redtable (Some id) true;
 		Mutex.unlock safe;
 		if send_response client (Reducer(Some id, ""))
-		then ()
-		else handle_request client
+		then handle_request client
+		else ()
 	    |_ -> failwith "InitReducer: Invalid Compiliation")
         | MapRequest (id, k, v) -> 
           print_endline "Request Mapper";
@@ -59,16 +59,16 @@ let rec handle_request client =
 	      (match result with 
 	      | None ->
 		  if (send_response client (RuntimeError(id, "MapRequest: None")))
-		  then ()
-		  else handle_request client
+		  then handle_request client
+		  else ()
 	      | Some n -> 
 		  if (send_response client (MapResults(id, n)))
-		  then ()
-		  else handle_request client)
+		  then handle_request client
+		  else ())
 	    | false -> 
 		if (send_response client (InvalidWorker(id))) 
-		then ()
-		else handle_request client)
+		then handle_request client
+		else ())
         | ReduceRequest (id, k, v) -> 
 	    print_endline "Request Reducer";
             Mutex.lock safe;
@@ -79,14 +79,14 @@ let rec handle_request client =
 	      (match result with
 	      | None -> 
 		  if (send_response client (RuntimeError(id, "ReduceRequest: None"))) 
-		  then ()
-		  else handle_request client
+		  then handle_request client
+		  else ()
 	      | Some n -> 
-		  if (send_response client (ReduceResults(id, n))) then ()
-		  else handle_request client)
+		  if (send_response client (ReduceResults(id, n))) then handle_request client
+		  else ())
 	    | false -> 
-		if (send_response client (InvalidWorker(id))) then ()
-		else handle_request client)
+		if (send_response client (InvalidWorker(id))) then handle_request client
+		else ())
       end
   | None ->
       Connection.close client;
