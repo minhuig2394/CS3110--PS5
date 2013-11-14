@@ -23,13 +23,13 @@ let rec handle_request client =
 	    match construct with 
 	    |(None, error) ->
 		if (send_response client (Mapper(None, error)))
-		then ()
-		else handle_request client
+		then handle_request client
+		else ()
 	    |(Some id, "") ->
 		Mutex.lock safe;
 		Hashtbl.add maptable (Some id) true;
 		Mutex.unlock safe;
-		if send_response client (Mapper(Some id, ""))
+		if (send_response client (Mapper(Some id, "")))
 		then ()
 		else handle_request client
 	    |_ -> failwith "InitMapper: Invalid Compiliation")
