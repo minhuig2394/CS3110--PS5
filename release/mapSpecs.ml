@@ -35,9 +35,9 @@ let mem_spec table k b =
  *)
 
 (** Map.empty *****************************************************************)
-
+(* specification for empty *)
 let empty_spec table=
-  bindings table = []
+  List.length (bindings table) = 0
   
 
 (* Dependent type for empty: 
@@ -47,8 +47,8 @@ let empty_spec table=
 
 (** Map.find ******************************************************************)
 
-let find_spec k table v = 
-  
+let find_spec k table v= 
+  List.exists (fun (k',v') -> (k = k') && (v = v')) (bindings table)
 
 (* Dependent type for find: 
  *
@@ -102,18 +102,16 @@ let remove_spec k table result=
 (** Map.equal *****************************************************************)
 
 (* specification for equal *)
-let equal_spec cmp table1 table2 b=
-  eqset (bindings table1) (bindings table2) 
-  && 
-  
+let equal_spec table1 table2 b=
+  b = eqset (bindings table1) (bindings table2) 
 
 (* Dependent type for equal: 
  * val equal : (cmp: 'a -> 'a -> bool)
  *          -> (table1:('a,'b) t)
  *          -> (table2:('a,'b) t)
- *          -> (b: bool where equal_spec cmp table1 table2 b)
+ *          -> (b: bool where equal_spec table1 table2 b)
  *)
-
+ 
 end
 
 (*

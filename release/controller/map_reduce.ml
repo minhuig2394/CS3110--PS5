@@ -21,26 +21,20 @@ let rthread_pool = Thread_pool.create 20
 * Ultimately, information entered in the hashtable is converted into a list.  
 *)
 let map kv_pairs map_filename : (string * string) list = 
-  print_endline "map1";
+  print_endline "mapping";
   List.iter
     (fun elem -> 
       Hashtbl.add mtasktbl elem false) kv_pairs;
-  print_endline "map2";
   let workers = (initialize_mappers map_filename) in 
     (while Hashtbl.length mtasktbl > 0 do 
-      print_endline "task length is ";
       print_int (Hashtbl.length mtasktbl);
-        print_endline "whileloop";
       Hashtbl.iter (fun k v -> 
-      print_endline "work";
       (match k with 
         |(key,value) ->
           (Thread_pool.add_work (fun x ->
             let worker = (pop_worker workers) in 
-            print_endline "123";
             match (map worker key value) with 
             |Some(l) -> 
-              print_endline "345";
               (Mutex.lock tasklock); 
               if Hashtbl.mem mtasktbl k then 
                 ((Hashtbl.remove mtasktbl k);
@@ -56,10 +50,9 @@ let map kv_pairs map_filename : (string * string) list =
       ) mtasktbl; 
       Thread.delay 0.1;
     done);
-    print_endline "cleanup";
+    print_endline "end mapping";
     Thread_pool.destroy mthread_pool; 
     clean_up_workers workers; 
-    print_endline "kvs";
   Hashtbl.fold (fun k v acc -> (k,v)::acc) mhashtbl []
 
 
