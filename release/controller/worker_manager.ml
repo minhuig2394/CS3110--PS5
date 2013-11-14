@@ -91,6 +91,8 @@ let initialize (worker_type : worker_type) (source_filename : string) : 'a worke
         else
           prerr_endline "Worker did not respond in connection"
     | None -> ()) connections;
+  match manager.workers with 
+  |l -> print_endline "workers"; print_int (List.length l);
   manager
 
 let initialize_mappers = initialize Map 

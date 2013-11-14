@@ -2,11 +2,11 @@ open Util
 open Worker_manager
 
 (*Hashtables*)
-let mhashtbl = Hashtbl.create 0
-let mtasktbl = Hashtbl.create 0
-let combinehash = Hashtbl.create 0 
-let rhashtbl = Hashtbl.create 0
-let rtasktbl = Hashtbl.create 0
+let mhashtbl = Hashtbl.create 1
+let mtasktbl = Hashtbl.create 1
+let combinehash = Hashtbl.create 1 
+let rhashtbl = Hashtbl.create 1
+let rtasktbl = Hashtbl.create 1
 (*Locks*)
 let hashlock = Mutex.create()
 let tasklock = Mutex.create()
@@ -21,17 +21,23 @@ let rthread_pool = Thread_pool.create 100
 * Ultimately, information entered in the hashtable is converted into a list.  
 *)
 let map kv_pairs map_filename : (string * string) list = 
+  print_endline "map1";
   List.iter
     (fun elem -> 
       Hashtbl.add mtasktbl elem false) kv_pairs;
+  print_endline "map2";
   let workers = (initialize_mappers map_filename) in 
   let work k v= 
-    let worker = (pop_worker workers) in 
+    print_endline "work";
       (match k with 
         |(key,value) ->
           (Thread_pool.add_work (fun x ->
+            print_endline "0";
+            let worker = (pop_worker workers) in 
+            print_endline "123";
             match (map worker key value) with 
             |Some(l) -> 
+              print_endline "345";
               (Mutex.lock tasklock); 
               if Hashtbl.mem mtasktbl k then 
                 ((Hashtbl.remove mtasktbl k);
@@ -45,11 +51,16 @@ let map kv_pairs map_filename : (string * string) list =
             |None -> ()
             ) mthread_pool)) in  
     (while Hashtbl.length mtasktbl > 0 do 
+        print_endline "whileloop";
       Hashtbl.iter (fun k v -> work k v) mtasktbl; 
-      Thread.delay 0.1
+       print_endline "whileloop2";
+      Thread.delay 0.1;
+      print_endline "whileloop3";
     done);
+    print_endline "cleanup";
   clean_up_workers workers; 
   Thread_pool.destroy mthread_pool; 
+    print_endline "kvs";
   Hashtbl.fold (fun k v acc -> (k,v)::acc) mhashtbl []
 
 
@@ -80,10 +91,10 @@ let reduce kvs_pairs reduce_filename : (string * string list) list =
       Hashtbl.add rtasktbl elem false) kvs_pairs;
   let workers = (initialize_reducers reduce_filename) in 
   let work k v= 
-    let worker = (pop_worker workers) in 
       match k with 
         |(key,value) ->
           (Thread_pool.add_work (fun x ->
+            let worker = (pop_worker workers) in 
             match (reduce worker key value) with 
             |Some(l) -> 
               (Mutex.lock tasklock); 
