@@ -27,12 +27,13 @@ let map kv_pairs map_filename : (string * string) list =
       Hashtbl.add mtasktbl elem false) kv_pairs;
   print_endline "map2";
   let workers = (initialize_mappers map_filename) in 
-  let work k v= 
-    print_endline "work";
+    (while Hashtbl.length mtasktbl > 0 do 
+        print_endline "whileloop";
+      Hashtbl.iter (fun k v -> 
+      print_endline "work";
       (match k with 
         |(key,value) ->
           (Thread_pool.add_work (fun x ->
-            print_endline "0";
             let worker = (pop_worker workers) in 
             print_endline "123";
             match (map worker key value) with 
@@ -49,13 +50,9 @@ let map kv_pairs map_filename : (string * string) list =
               else (); 
               (Mutex.unlock tasklock)
             |None -> ()
-            ) mthread_pool)) in  
-    (while Hashtbl.length mtasktbl > 0 do 
-        print_endline "whileloop";
-      Hashtbl.iter (fun k v -> work k v) mtasktbl; 
-       print_endline "whileloop2";
+            ) mthread_pool))
+      ) mtasktbl; 
       Thread.delay 0.1;
-      print_endline "whileloop3";
     done);
     print_endline "cleanup";
   clean_up_workers workers; 
@@ -90,7 +87,8 @@ let reduce kvs_pairs reduce_filename : (string * string list) list =
     (fun elem -> 
       Hashtbl.add rtasktbl elem false) kvs_pairs;
   let workers = (initialize_reducers reduce_filename) in 
-  let work k v= 
+    while Hashtbl.length rtasktbl > 0 do 
+      Hashtbl.iter (fun k v -> 
       match k with 
         |(key,value) ->
           (Thread_pool.add_work (fun x ->
@@ -107,9 +105,7 @@ let reduce kvs_pairs reduce_filename : (string * string list) list =
               else (); 
               (Mutex.unlock tasklock)
             |None -> ()
-            ) rthread_pool) in  
-    while Hashtbl.length rtasktbl > 0 do 
-      Hashtbl.iter (fun k v -> work k v) rtasktbl; 
+            ) rthread_pool)) rtasktbl; 
       Thread.delay 0.1;
     done;
   clean_up_workers workers; 
