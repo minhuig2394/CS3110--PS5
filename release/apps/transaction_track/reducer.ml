@@ -9,4 +9,4 @@ let present_value =
       |[] -> amt 
     in let total = sum 0 value
   in 
-in Program.set_output (Util.marshal total)
+in Program.set_output ([Util.marshal total])

@@ -21,7 +21,6 @@ let rthread_pool = Thread_pool.create 20
 * Ultimately, information entered in the hashtable is converted into a list.  
 *)
 let map kv_pairs map_filename : (string * string) list = 
-  print_endline "mapping";
   List.iter
     (fun elem -> 
       Hashtbl.add mtasktbl elem false) kv_pairs;
@@ -51,7 +50,6 @@ let map kv_pairs map_filename : (string * string) list =
       ) mtasktbl; 
       Thread.delay 0.1;
     done);
-    print_endline "end mapping";
     Thread_pool.destroy mthread_pool; 
     clean_up_workers workers; 
   Hashtbl.fold (fun k v acc -> (k,v)::acc) mhashtbl []
@@ -63,14 +61,13 @@ let map kv_pairs map_filename : (string * string) list =
 *their associated values.  
 *)
 let combine kv_pairs : (string * string list) list =
-  print_endline "combining"; 
   List.iter (fun elem -> 
     match elem with 
-    |key,value -> Hashtbl.add combinehash key value) kv_pairs;
-  Hashtbl.fold (fun k v acc -> 
-    match acc with 
-    |(key,value)::t -> if not(key = k) then (k, [v]) :: acc else (k,v::value)::t
-    |[] -> (k,[v])::acc) combinehash []
+    |key,value -> if (Hashtbl.mem combinehash key) then 
+      Hashtbl.replace combinehash key (value::(Hashtbl.find combinehash key)) 
+    else 
+    Hashtbl.add combinehash key [value]) kv_pairs;
+  Hashtbl.fold (fun k v acc -> (k,v)::acc) combinehash []
 
 (* reduce kvs_pairs reduce_filename initalizes reducers and iterates over
 * kvs_pairs, passing work to be attempted by reducers in threads. If the 
@@ -80,7 +77,6 @@ let combine kv_pairs : (string * string list) list =
 *)
 
 let reduce kvs_pairs reduce_filename : (string * string list) list =
-  print_endline "reducing";
   List.iter
     (fun elem -> 
       Hashtbl.add rtasktbl elem false) kvs_pairs;
@@ -109,7 +105,6 @@ let reduce kvs_pairs reduce_filename : (string * string list) list =
     done;
   Thread_pool.destroy rthread_pool; 
   clean_up_workers workers; 
-  print_endline "end reducing";
   Hashtbl.fold (fun k v acc -> (k,v)::acc) rhashtbl []
 
 let map_reduce app_name mapper_name reducer_name kv_pairs =
