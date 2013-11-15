@@ -6,7 +6,7 @@ let main (args : string array) : unit =
   else
    let filename = args.(2) in
     let students = load_grades filename in 
-    let kv_pairs = List.rev_map (fun d -> (string_of_int d.id, d.course_grades)) students in
+    let kv_pairs = List.rev_map (fun d -> (string_of_int d.id_num, d.course_grades)) students in
     let reduced = 
       Map_reduce.map_reduce "grades" "mapper" "reducer" kv_pairs in
     print_reduced_courses reduced
