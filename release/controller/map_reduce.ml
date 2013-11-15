@@ -44,7 +44,8 @@ let map kv_pairs map_filename : (string * string) list =
                   (Mutex.unlock hashlock)
                   )
               else (); 
-              (Mutex.unlock tasklock);push_worker workers worker
+              (Mutex.unlock tasklock);
+              push_worker workers worker
             |None -> ()
             ) mthread_pool))
       ) mtasktbl; 
@@ -100,7 +101,8 @@ let reduce kvs_pairs reduce_filename : (string * string list) list =
                   (Mutex.unlock hashlock)
                   )
               else (); 
-              (Mutex.unlock tasklock);push_worker workers worker
+              (Mutex.unlock tasklock);
+              push_worker workers worker
             |None -> ()
             ) rthread_pool)) rtasktbl; 
       Thread.delay 0.1;

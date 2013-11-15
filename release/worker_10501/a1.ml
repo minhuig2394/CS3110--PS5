@@ -2,8 +2,7 @@ open Util;;
 
 let format blk data = 
   match data with 
-  |h::t -> print_endline h;
-    let (txct:int) = (Util.unmarshal h) in 
+  |h::t -> let (txct:int) = (Util.unmarshal h) in 
     let rec transaction txct t reslst= 
       if txct > 0 then begin
         match t with 
@@ -22,7 +21,7 @@ let format blk data =
     let rec outids n translst results =
       if n > 0 then begin
         match translst with 
-        |oid::oamt::t -> print_endline oamt;
+        |oid::oamt::t -> 
           let (outamt:int) = (Util.unmarshal oamt) in 
          let newlst = (oid,outamt)::results in 
             outids (n - 1) t newlst
