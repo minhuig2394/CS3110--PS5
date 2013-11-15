@@ -10,7 +10,7 @@ let sortedval =
 let median =
   let length = List.length sortedval in 
   if (length mod 2) = 0 then 
-    let mid1 = length - (length/2) - 1in
+    let mid1 = length - (length/2) - 1 in
     let mid2 = mid1 + 1 in
     let mid1int = 
       float_of_string (List.nth sortedval mid1) in
