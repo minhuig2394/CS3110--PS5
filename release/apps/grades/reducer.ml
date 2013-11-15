@@ -2,7 +2,7 @@ open Util;;
 
 let (key, values) = Program.get_input() in 
 let com v1 v2 = 
-  if float_of_string v1 > int_of_string v2 then 1
+  if float_of_string v1 > float_of_string v2 then 1
   else if float_of_string v1 < float_of_string v2 then -1
   else 0 in 
 let sortedval = 
